@@ -25,21 +25,32 @@ import (
 
 // MongoDBSpec defines the desired state of MongoDB
 type MongoDBSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	Replicas *int32 `json:"replicas,omitempty"`
 
-	// Foo is an example field of MongoDB. Edit mongodb_types.go to remove/update
-	Foo string `json:"foo,omitempty"`
+	Storage *string `json:"storage,omitempty"`
 }
 
 // MongoDBStatus defines the observed state of MongoDB
 type MongoDBStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+
+	// constains status of statefulset managed by MongoDB
+	StatefulSetStatus appsv1.StatefulSetStatus `json:"statefulSetStatus,omitempty"`
+
+	// serviceStatus contains the status of the Service managed by MongoDB
+
+	ClusterIP string `json:clusterIP,omitempty`
 }
 
-//+kubebuilder:object:root=true
-//+kubebuilder:subresource:status
+// +kubebuilder:printcolumn:name="storage",type="string",JSONPath=".spec.storage",format="byte"
+// +kubebuilder:printcolumn:name="replicas",type="integer",JSONPath=".spec.replicas",format="int32"
+// +kubebuilder:printcolumn:name="ready replicas",type="integer",JSONPath=".status.statefulSetStatus.readyReplicas",format="int32"
+// +kubebuilder:printcolumn:name="current replicas",type="integer",JSONPath=".status.statefulSetStatus.currentReplicas",format="int32"
+// +kubebuilder:printcolumn:name="cluster-ip",type="string",JSONPath=".status.clusterIP",format="byte"
+
+// +kubebuilder:subresource:status
+
+// +kubebuilder:subresource:scale:specpath=.spec.replicas,statuspath=.status.statefulSetStatus.replicas
+
 
 // MongoDB is the Schema for the mongodbs API
 type MongoDB struct {
