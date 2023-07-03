@@ -1,0 +1,12 @@
+apiVersion: databases.core.yrs.io/v1alpha1
+kind: MongoDB
+metadata:
+  labels:
+    app.kubernetes.io/name: mongodb
+    app.kubernetes.io/instance: mongodb-sample
+    app.kubernetes.io/part-of: mongo-operator
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: mongo-operator
+  name: mongodb-sample
+spec:
+  # TODO(user): Add fields here
