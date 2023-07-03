@@ -23,7 +23,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/log"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 
 	databasesv1alpha1 "github.com/yrs147/mongo-operator/api/v1alpha1"
 )
@@ -48,14 +48,38 @@ type MongoDBReconciler struct {
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.15.0/pkg/reconcile
 func (r *MongoDBReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	
+
+	//Fetching MongoDB instance
 	mongo := &databasesv1alpha1.MongoDB{}
-	if err := r.Get(ctx, req.NamespacedName, mongo); err != nil{
-		if errors.IsNotFound(err){
+	if err := r.Get(ctx, req.NamespacedName, mongo); err != nil {
+		if errors.IsNotFound(err) {
 			return ctrl.Result{}, nil
 		}
+		return ctrl.Result{}, err
 	}
-	return ctrl.Result{}, nil
+
+	//Generating Serivce object managed by MongoDB
+
+	//Service struct to create or update
+	service := &corev1.Service{
+		ObjectMeta: ctrl.ObjectMeta{
+			Name:      req.Name + "-mongodb-service",
+			Namespace: req.Namespace,
+		},
+	}
+
+	_, err := ctrl.CreateOrUpdate(ctx, r.Client, service, func() error {
+
+		util.SetServiceFields(service, mongo)
+
+		//Adding owner refernece for garbage collection
+		return controllerutil.SetControllerReference(mongo, service, r.Scheme)
+
+	})
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+
 }
 
 // SetupWithManager sets up the controller with the Manager.
