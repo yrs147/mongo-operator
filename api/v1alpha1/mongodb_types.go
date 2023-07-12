@@ -52,6 +52,8 @@ type MongoDBStatus struct {
 
 // +kubebuilder:subresource:scale:specpath=.spec.replicas,statuspath=.status.statefulSetStatus.replicas
 
+// +kubebuilder:rbac:groups=core,resources=services,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=apps,resources=statefulsets,verbs=get;list;watch;create;update;patch;delete
 
 // MongoDB is the Schema for the mongodbs API
 type MongoDB struct {
