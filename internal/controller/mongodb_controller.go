@@ -68,6 +68,7 @@ func (r *MongoDBReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		},
 	}
 
+	//Create or update stateful set
 	_, err := ctrl.CreateOrUpdate(ctx, r.Client, service, func() error {
 
 		util.SetServiceFields(service, mongo)
@@ -78,6 +79,38 @@ func (r *MongoDBReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	})
 	if err != nil {
 		return ctrl.Result{}, err
+	}
+
+	//Generating a Stateful managed by MongoDB
+	
+	stateful := &appsv1.StatefulSet{
+		ObjectMeta: ctrl.ObjectMeta{
+			Name: req.Name+"-mongodb-stateful",
+			Namespace: req.Namespace,
+		},
+	}
+
+	//Create or Delete StatefulSet
+	_,err = ctrl.CreateOrUpdate(ctx, r.Client, service, func() error{
+	util.SetStatefulSetFields(stateful, service, mongo, mongo.Spec.Replicas, mongo.Spec.Storage)
+
+	//Adding owner reference for garbage collection
+	return controllerutil.SetControllerReference(mongo, stateful, r.Scheme)
+	})
+	if err !=nil {
+		return ctrl.Result{},err
+	}
+
+	//Updating MongoDB Status
+
+	mongo.Status.StatefulSetStatus = stateful.Status
+	mongo.Status.ServiceStatus = service.Status
+	mongo.Status.ClusterIP = service.Spec.ClusterIP
+
+	err = r.Status().Update(ctx,mongo)
+	
+	if err !=nil{
+		return ctrl.Result{},err
 	}
 
 }

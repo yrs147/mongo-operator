@@ -37,7 +37,8 @@ type MongoDBStatus struct {
 	StatefulSetStatus appsv1.StatefulSetStatus `json:"statefulSetStatus,omitempty"`
 
 	// serviceStatus contains the status of the Service managed by MongoDB
-
+	ServiceStatus corev1.ServiceStatus `json"serviceStatus,omitempty"`
+	
 	ClusterIP string `json:clusterIP,omitempty`
 }
 
