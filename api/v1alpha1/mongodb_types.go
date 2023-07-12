@@ -17,6 +17,7 @@ limitations under the License.
 package v1alpha1
 
 import (
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -38,7 +39,7 @@ type MongoDBStatus struct {
 
 	// serviceStatus contains the status of the Service managed by MongoDB
 	ServiceStatus corev1.ServiceStatus `json"serviceStatus,omitempty"`
-	
+
 	ClusterIP string `json:clusterIP,omitempty`
 }
 

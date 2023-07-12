@@ -19,6 +19,7 @@ package controller
 import (
 	"context"
 
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -82,23 +83,23 @@ func (r *MongoDBReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	}
 
 	//Generating a Stateful managed by MongoDB
-	
+
 	stateful := &appsv1.StatefulSet{
 		ObjectMeta: ctrl.ObjectMeta{
-			Name: req.Name+"-mongodb-stateful",
+			Name:      req.Name + "-mongodb-stateful",
 			Namespace: req.Namespace,
 		},
 	}
 
 	//Create or Delete StatefulSet
-	_,err = ctrl.CreateOrUpdate(ctx, r.Client, service, func() error{
-	util.SetStatefulSetFields(stateful, service, mongo, mongo.Spec.Replicas, mongo.Spec.Storage)
+	_, err = ctrl.CreateOrUpdate(ctx, r.Client, service, func() error {
+		util.SetStatefulSetFields(stateful, service, mongo, mongo.Spec.Replicas, mongo.Spec.Storage)
 
-	//Adding owner reference for garbage collection
-	return controllerutil.SetControllerReference(mongo, stateful, r.Scheme)
+		//Adding owner reference for garbage collection
+		return controllerutil.SetControllerReference(mongo, stateful, r.Scheme)
 	})
-	if err !=nil {
-		return ctrl.Result{},err
+	if err != nil {
+		return ctrl.Result{}, err
 	}
 
 	//Updating MongoDB Status
@@ -107,10 +108,10 @@ func (r *MongoDBReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	mongo.Status.ServiceStatus = service.Status
 	mongo.Status.ClusterIP = service.Spec.ClusterIP
 
-	err = r.Status().Update(ctx,mongo)
-	
-	if err !=nil{
-		return ctrl.Result{},err
+	err = r.Status().Update(ctx, mongo)
+
+	if err != nil {
+		return ctrl.Result{}, err
 	}
 
 }
